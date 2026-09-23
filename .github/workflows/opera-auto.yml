@@ -201,6 +201,9 @@ jobs:
           set -euo pipefail
           COUNT=$(/usr/bin/python3 -c 'import json; print(json.load(open("work/opera/github_shards/metadata.json"))["targets_selected"])')
 
+          git -C public fetch origin main
+          git -C public reset --hard origin/main
+
           cp work/package/manifest.json public/manifest.json
           if [ "$COUNT" != "0" ]; then
             cp work/package/catalog_delta.json public/catalog_delta.json
