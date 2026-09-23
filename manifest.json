@@ -1,183 +1,26 @@
 {
-  "schema": "critici-opera-github-bundle-1",
-  "generated_at": "2026-09-23T11:05:06.428202+00:00",
-  "discovery": {
-    "generated_at": "2026-09-23T11:03:25.239208+00:00",
-    "updated_since": "2026-09-23T10:48:25.239208+00:00",
-    "temporal_start": "2026-09-15T11:03:25.239208+00:00",
-    "temporal_end": "2026-09-23T11:03:25.239208+00:00",
-    "records_read": 41,
-    "pages": 1,
-    "tiles": 41,
-    "shards": 8
+  "schema": "critici-opera-github-update-v1",
+  "scientific_schema_version": 2,
+  "generation_id": "35865395473",
+  "source_commit": "e97b0aa51e4b00eb321bbf3f1fc33023c2d4e924",
+  "generated_at": "2026-09-23T13:13:03.480172+00:00",
+  "window_start": "2026-09-17",
+  "window_end": "2026-09-23",
+  "discovery_generated_at": "2026-09-23T13:12:02.785178+00:00",
+  "pending_total_at_discovery": 0,
+  "targets_selected": 0,
+  "tiles_successful": 0,
+  "tiles_failed": 0,
+  "failures": [],
+  "catalog_delta": {
+    "rows": 0,
+    "sha256": "7ba2fe633361361f518e0f95ebee386087a738d1d97d6d35d31ac8ea5ec48275",
+    "bytes": 78
   },
-  "successful_tiles": 41,
-  "failed_tiles": 0,
-  "failed": {},
-  "tiles": {
-    "T10UEE": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T10UEE_20260921T191009Z_20260923T104711Z_S2B_30_v1",
-      "time_start": "2026-09-21T19:19:41.784Z"
-    },
-    "T11TQG": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T11TQG_20260921T182041Z_20260923T104735Z_S2C_30_v1",
-      "time_start": "2026-09-21T18:32:42.477Z"
-    },
-    "T12VUP": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T12VUP_20260921T191009Z_20260923T104739Z_S2B_30_v1",
-      "time_start": "2026-09-21T19:17:10.885Z"
-    },
-    "T12WVT": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T12WVT_20260921T191009Z_20260923T104830Z_S2B_30_v1",
-      "time_start": "2026-09-21T19:16:10.657Z"
-    },
-    "T14UQA": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T14UQA_20260921T172929Z_20260923T104653Z_S2B_30_v1",
-      "time_start": "2026-09-21T17:39:52.895Z"
-    },
-    "T15VVD": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T15VVD_20260921T172929Z_20260923T104745Z_S2B_30_v1",
-      "time_start": "2026-09-21T17:37:53.730Z"
-    },
-    "T16UGA": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T16UGA_20260921T164001Z_20260923T104733Z_S2C_30_v1",
-      "time_start": "2026-09-21T16:49:34.964Z"
-    },
-    "T18LUN": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T18LUN_20260921T151721Z_20260923T104648Z_S2C_30_v1",
-      "time_start": "2026-09-21T15:26:17.967Z"
-    },
-    "T18MVT": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T18MVT_20260921T151721Z_20260923T104626Z_S2C_30_v1",
-      "time_start": "2026-09-21T15:25:02.025Z"
-    },
-    "T19KEQ": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T19KEQ_20260921T143801Z_20260923T105154Z_S2A_30_v1",
-      "time_start": "2026-09-21T14:49:31.345Z"
-    },
-    "T19LGD": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T19LGD_20260921T143801Z_20260923T104658Z_S2A_30_v1",
-      "time_start": "2026-09-21T14:47:13.878Z"
-    },
-    "T19LGH": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T19LGH_20260921T143801Z_20260923T104716Z_S2A_30_v1",
-      "time_start": "2026-09-21T14:46:15.998Z"
-    },
-    "T20LLL": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T20LLL_20260921T142709Z_20260923T104812Z_S2B_30_v1",
-      "time_start": "2026-09-21T14:36:27.101Z"
-    },
-    "T20LLM": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T20LLM_20260921T142709Z_20260923T104802Z_S2B_30_v1",
-      "time_start": "2026-09-21T14:36:12.659Z"
-    },
-    "T22JBR": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T22JBR_20260921T133831Z_20260923T104726Z_S2C_30_v1",
-      "time_start": "2026-09-21T13:49:50.822Z"
-    },
-    "T22KDC": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T22KDC_20260921T133831Z_20260923T104727Z_S2C_30_v1",
-      "time_start": "2026-09-21T13:48:02.202Z"
-    },
-    "T24LVR": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T24LVR_20260921T130301Z_20260923T104714Z_S2A_30_v1",
-      "time_start": "2026-09-21T13:04:43.126Z"
-    },
-    "T24MWS": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T24MWS_20260921T125309Z_20260923T104614Z_S2B_30_v1",
-      "time_start": "2026-09-21T12:54:15.383Z"
-    },
-    "T30SWG": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T30SWG_20260921T105701Z_20260923T105225Z_S2A_30_v1",
-      "time_start": "2026-09-21T11:10:59.777Z"
-    },
-    "T37UFT": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T37UFT_20260921T081631Z_20260923T104744Z_S2C_30_v1",
-      "time_start": "2026-09-21T08:25:39.516Z"
-    },
-    "T38PKR": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T38PKR_20260921T072619Z_20260923T105933Z_S2B_30_v1",
-      "time_start": "2026-09-21T07:47:13.304Z"
-    },
-    "T39RUQ": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T39RUQ_20260921T072619Z_20260923T105933Z_S2B_30_v1",
-      "time_start": "2026-09-21T07:40:58.906Z"
-    },
-    "T39SUD": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T39SUD_20260921T072619Z_20260923T105944Z_S2B_30_v1",
-      "time_start": "2026-09-21T07:38:52.750Z"
-    },
-    "T43VCG": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T43VCG_20260921T063621Z_20260923T105950Z_S2C_30_v1",
-      "time_start": "2026-09-21T06:42:32.875Z"
-    },
-    "T44WNV": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T44WNV_20260921T063621Z_20260923T110059Z_S2C_30_v1",
-      "time_start": "2026-09-21T06:40:14.118Z"
-    },
-    "T46QFK": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T46QFK_20260921T040539Z_20260923T105653Z_S2B_30_v1",
-      "time_start": "2026-09-21T04:22:21.078Z"
-    },
-    "T46RGV": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T46RGV_20260921T040539Z_20260923T105703Z_S2B_30_v1",
-      "time_start": "2026-09-21T04:19:54.981Z"
-    },
-    "T47SKR": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T47SKR_20260921T040539Z_20260923T105830Z_S2B_30_v1",
-      "time_start": "2026-09-21T04:19:34.708Z"
-    },
-    "T47SLU": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T47SLU_20260921T040539Z_20260923T105854Z_S2B_30_v1",
-      "time_start": "2026-09-21T04:18:48.076Z"
-    },
-    "T47VLD": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T47VLD_20260921T045701Z_20260923T105932Z_S2C_30_v1",
-      "time_start": "2026-09-21T05:02:35.745Z"
-    },
-    "T47VLK": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T47VLK_20260921T045701Z_20260923T105949Z_S2C_30_v1",
-      "time_start": "2026-09-21T05:01:11.706Z"
-    },
-    "T48MUB": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T48MUB_20260921T031521Z_20260923T105709Z_S2C_30_v1",
-      "time_start": "2026-09-21T03:38:59.678Z"
-    },
-    "T48STJ": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T48STJ_20260921T040539Z_20260923T105945Z_S2B_30_v1",
-      "time_start": "2026-09-21T04:17:20.472Z"
-    },
-    "T49MHS": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T49MHS_20260921T022549Z_20260923T110040Z_S2B_30_v1",
-      "time_start": "2026-09-21T02:48:45.168Z"
-    },
-    "T50JQQ": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T50JQQ_20260921T015401Z_20260923T105618Z_S2C_30_v1",
-      "time_start": "2026-09-21T02:05:26.845Z"
-    },
-    "T51TXL": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T51TXL_20260921T022549Z_20260923T110012Z_S2B_30_v1",
-      "time_start": "2026-09-21T02:35:07.590Z"
-    },
-    "T53KLA": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T53KLA_20260921T011741Z_20260923T104737Z_S2A_30_v1",
-      "time_start": "2026-09-21T01:22:25.766Z"
-    },
-    "T53KNQ": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T53KNQ_20260921T010729Z_20260923T104806Z_S2B_30_v1",
-      "time_start": "2026-09-21T01:13:36.730Z"
-    },
-    "T53KPT": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T53KPT_20260921T010729Z_20260923T104631Z_S2B_30_v1",
-      "time_start": "2026-09-21T01:12:49.626Z"
-    },
-    "T53LMD": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T53LMD_20260921T011741Z_20260923T104710Z_S2A_30_v1",
-      "time_start": "2026-09-21T01:21:39.129Z"
-    },
-    "T55JCG": {
-      "granule_id": "OPERA_L3_DIST-ALERT-HLS_T55JCG_20260921T002051Z_20260923T104831Z_S2C_30_v1",
-      "time_start": "2026-09-21T00:25:21.622Z"
-    }
+  "payload": {
+    "name": "update.ndjson.gz",
+    "sha256": "721510bef96c5fd9abe993e900d92f0cad82d658d7baa9e541c1ec7b39f14b65",
+    "bytes": 39,
+    "encoding": "gzip+ndjson"
   }
 }
