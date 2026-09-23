@@ -2,8 +2,11 @@ name: OPERA automatic public backend
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "trigger.json"
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "17 * * * *"
 
 permissions:
   contents: write
@@ -237,4 +240,12 @@ jobs:
             git add catalog_delta.json catalog_delta.sha256
           fi
           git commit -m "Automatic OPERA heartbeat $GITHUB_RUN_ID"
-          git push origin main
+          for attempt in 1 2 3; do
+            if git push origin main; then
+              exit 0
+            fi
+            echo "Feed push race; retry $attempt/3"
+            git pull --rebase origin main
+          done
+          echo "Feed push failed after retries" >&2
+          exit 1
