@@ -1,0 +1,224 @@
+name: OPERA automatic public backend
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: opera-public-backend
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPERA_BASE: ${{ github.workspace }}/work/opera
+
+    steps:
+      - name: Checkout private backend
+        uses: actions/checkout@v4
+        with:
+          repository: robspugliese-design/critici-opera-backend
+          ref: main
+          path: backend
+          ssh-key: ${{ secrets.BACKEND_READ_KEY }}
+
+      - name: Install discovery dependency
+        run: sudo apt-get update && sudo apt-get install -y python3-requests
+
+      - name: Restore persistent OPERA state
+        uses: actions/cache/restore@v4
+        with:
+          path: work/opera/state
+          key: opera-state-${{ github.run_id }}
+          restore-keys: |
+            opera-state-
+
+      - name: Discover NASA changes and balance shards
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 backend/scripts/discover_and_shard.py \
+            --shards 8 \
+            --max-targets 0 \
+            --prefer-light
+
+      - name: Upload discovery
+        uses: actions/upload-artifact@v4
+        with:
+          name: opera-discovery-${{ github.run_id }}
+          path: |
+            work/opera/state
+            work/opera/github_shards
+          retention-days: 2
+
+  process:
+    needs: discover
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPERA_BASE: ${{ github.workspace }}/work/opera
+      CROWTHER_DIR: ${{ github.workspace }}/work/crowther
+      CROWTHER_ORIGINAL: ${{ github.workspace }}/work/crowther/Crowther_Nature_Biome_Revision_01_WGS84_GeoTiff.tif
+
+    steps:
+      - name: Checkout private backend
+        uses: actions/checkout@v4
+        with:
+          repository: robspugliese-design/critici-opera-backend
+          ref: main
+          path: backend
+          ssh-key: ${{ secrets.BACKEND_READ_KEY }}
+
+      - name: Download discovery
+        uses: actions/download-artifact@v4
+        with:
+          name: opera-discovery-${{ github.run_id }}
+          path: work/opera
+
+      - name: Install processing dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-numpy python3-gdal python3-requests \
+            gdal-bin curl unzip build-essential
+
+      - name: Restore Crowther cache
+        id: crowther-cache
+        uses: actions/cache@v4
+        with:
+          path: work/crowther
+          key: crowther-wgs84-revision01-figshare-5332990-v1
+
+      - name: Download Crowther if needed
+        if: steps.crowther-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$CROWTHER_DIR"
+          curl -fL --retry 4 --retry-delay 3 \
+            https://ndownloader.figshare.com/files/5332990 \
+            -o /tmp/crowther.zip
+          unzip -j /tmp/crowther.zip \
+            '*Crowther_Nature_Biome_Revision_01_WGS84_GeoTiff.tif' \
+            -d "$CROWTHER_DIR"
+          rm -f /tmp/crowther.zip
+
+      - name: Prepare runtime
+        env:
+          EARTHDATA_NETRC: ${{ secrets.EARTHDATA_NETRC }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OPERA_BASE/bin" "$OPERA_BASE/auth" \
+            "$OPERA_BASE/cache/worker" \
+            "$OPERA_BASE/cache/crowther_tiles" \
+            "$OPERA_BASE/events/tiles"
+          printf '%s' "$EARTHDATA_NETRC" \
+            > "$OPERA_BASE/auth/earthdata.netrc"
+          chmod 600 "$OPERA_BASE/auth/earthdata.netrc"
+          /usr/bin/python3 backend/scripts/prepare_earthdata_token.py
+          gcc -O3 -fPIC -shared \
+            backend/src/opera_cluster.c \
+            -o "$OPERA_BASE/bin/libopera_cluster.so"
+
+      - name: Process shard
+        continue-on-error: true
+        run: |
+          START=$(/usr/bin/python3 -c 'import json; print(json.load(open("work/opera/github_shards/metadata.json"))["window_start"])')
+          END=$(/usr/bin/python3 -c 'import json; print(json.load(open("work/opera/github_shards/metadata.json"))["window_end"])')
+          /usr/bin/python3 backend/scripts/run_batch.py \
+            --targets "work/opera/github_shards/shard_${{ matrix.shard }}.json" \
+            --window-start "$START" \
+            --window-end "$END" \
+            --workers 2
+
+      - name: Upload shard result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: opera-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: |
+            work/opera/manifest.json
+            work/opera/events/tiles/*.json
+          if-no-files-found: error
+          retention-days: 2
+
+  merge:
+    needs: [discover, process]
+    if: always() && needs.discover.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPERA_BASE: ${{ github.workspace }}/work/opera
+
+    steps:
+      - name: Checkout private backend
+        uses: actions/checkout@v4
+        with:
+          repository: robspugliese-design/critici-opera-backend
+          ref: main
+          path: backend
+          ssh-key: ${{ secrets.BACKEND_READ_KEY }}
+
+      - name: Checkout public data repo
+        uses: actions/checkout@v4
+        with:
+          path: public
+
+      - name: Download discovery
+        uses: actions/download-artifact@v4
+        with:
+          name: opera-discovery-${{ github.run_id }}
+          path: work/opera
+
+      - name: Download all shard results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: opera-shard-*-${{ github.run_id }}
+          path: work/shards
+
+      - name: Merge package
+        run: |
+          /usr/bin/python3 backend/scripts/merge_shards.py \
+            --artifacts work/shards \
+            --metadata work/opera/github_shards/metadata.json \
+            --output work/package
+
+      - name: Save persistent OPERA state
+        uses: actions/cache/save@v4
+        with:
+          path: work/opera/state
+          key: opera-state-${{ github.run_id }}
+
+      - name: Publish current Raspberry feed
+        run: |
+          set -euo pipefail
+          COUNT=$(/usr/bin/python3 -c 'import json; print(json.load(open("work/opera/github_shards/metadata.json"))["targets_selected"])')
+          if [ "$COUNT" = "0" ]; then
+            echo "No NASA changes; public feed remains current"
+            exit 0
+          fi
+
+          cp work/package/catalog_delta.json \
+            public/catalog_delta.json
+          cp work/package/catalog_delta.sha256 \
+            public/catalog_delta.sha256
+          cp work/package/manifest.json \
+            public/manifest.json
+
+          cd public
+          git config user.name "critici-opera-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add catalog_delta.json catalog_delta.sha256 manifest.json
+          if git diff --cached --quiet; then
+            echo "Public feed already current"
+            exit 0
+          fi
+          git commit -m "Automatic OPERA update ${GITHUB_RUN_ID}"
+          git push origin main
