@@ -87,7 +87,18 @@ jobs:
           name: opera-discovery-${{ github.run_id }}
           path: work/opera
 
+      - name: Inspect shard
+        id: shard
+        run: |
+          COUNT=$(/usr/bin/python3 -c 'import json; print(len(json.load(open("work/opera/github_shards/shard_${{ matrix.shard }}.json"))))')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" = "0" ]; then
+            mkdir -p "$OPERA_BASE/events/tiles"
+            printf '{"results":[],"ok":0,"failed":0}\n' > "$OPERA_BASE/manifest.json"
+          fi
+
       - name: Install processing dependencies
+        if: steps.shard.outputs.count != '0'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -95,6 +106,7 @@ jobs:
             gdal-bin curl unzip build-essential
 
       - name: Restore Crowther cache
+        if: steps.shard.outputs.count != '0'
         id: crowther-cache
         uses: actions/cache@v4
         with:
@@ -102,7 +114,7 @@ jobs:
           key: crowther-wgs84-revision01-figshare-5332990-v1
 
       - name: Download Crowther if needed
-        if: steps.crowther-cache.outputs.cache-hit != 'true'
+        if: steps.shard.outputs.count != '0' && steps.crowther-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p "$CROWTHER_DIR"
           curl -fL --retry 4 --retry-delay 3 \
@@ -114,6 +126,7 @@ jobs:
           rm -f /tmp/crowther.zip
 
       - name: Prepare runtime
+        if: steps.shard.outputs.count != '0'
         env:
           EARTHDATA_NETRC: ${{ secrets.EARTHDATA_NETRC }}
         run: |
@@ -125,12 +138,23 @@ jobs:
           printf '%s' "$EARTHDATA_NETRC" \
             > "$OPERA_BASE/auth/earthdata.netrc"
           chmod 600 "$OPERA_BASE/auth/earthdata.netrc"
-          /usr/bin/python3 backend/scripts/prepare_earthdata_token.py
+          for attempt in 1 2; do
+            if /usr/bin/python3 backend/scripts/prepare_earthdata_token.py; then
+              break
+            fi
+            if [ "$attempt" = "2" ]; then
+              exit 1
+            fi
+            echo "Earthdata runtime retry on same runner"
+            sleep 10
+          done
           gcc -O3 -fPIC -shared \
             backend/src/opera_cluster.c \
             -o "$OPERA_BASE/bin/libopera_cluster.so"
 
       - name: Process shard
+        id: process-shard
+        if: steps.shard.outputs.count != '0'
         continue-on-error: true
         run: |
           START=$(/usr/bin/python3 -c 'import json; print(json.load(open("work/opera/github_shards/metadata.json"))["window_start"])')
@@ -142,7 +166,124 @@ jobs:
             --workers 2
 
       - name: Upload shard result
-        if: always()
+        if: always() && (steps.shard.outputs.count == '0' || steps.process-shard.outcome == 'success')
+        uses: actions/upload-artifact@v4
+        with:
+          name: opera-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: |
+            work/opera/manifest.json
+            work/opera/events/tiles/*.json
+          if-no-files-found: error
+          retention-days: 2
+
+  process_retry:
+    needs: [discover, process]
+    if: always() && needs.discover.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPERA_BASE: ${{ github.workspace }}/work/opera
+      CROWTHER_DIR: ${{ github.workspace }}/work/crowther
+      CROWTHER_ORIGINAL: ${{ github.workspace }}/work/crowther/Crowther_Nature_Biome_Revision_01_WGS84_GeoTiff.tif
+
+    steps:
+      - name: Check successful first attempt
+        id: existing
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: opera-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: work/existing
+
+      - name: Checkout private backend
+        if: steps.existing.outcome == 'failure'
+        uses: actions/checkout@v4
+        with:
+          repository: robspugliese-design/critici-opera-backend
+          ref: main
+          path: backend
+          ssh-key: ${{ secrets.BACKEND_READ_KEY }}
+
+      - name: Download discovery
+        if: steps.existing.outcome == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: opera-discovery-${{ github.run_id }}
+          path: work/opera
+
+      - name: Inspect retry shard
+        if: steps.existing.outcome == 'failure'
+        id: retry-shard
+        run: |
+          COUNT=$(/usr/bin/python3 -c 'import json; print(len(json.load(open("work/opera/github_shards/shard_${{ matrix.shard }}.json"))))')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" = "0" ]; then
+            mkdir -p "$OPERA_BASE/events/tiles"
+            printf '{"results":[],"ok":0,"failed":0}\n' > "$OPERA_BASE/manifest.json"
+          fi
+
+      - name: Install processing dependencies
+        if: steps.existing.outcome == 'failure' && steps.retry-shard.outputs.count != '0'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-numpy python3-gdal python3-requests \
+            gdal-bin curl unzip build-essential
+
+      - name: Restore Crowther cache
+        if: steps.existing.outcome == 'failure' && steps.retry-shard.outputs.count != '0'
+        id: retry-crowther-cache
+        uses: actions/cache@v4
+        with:
+          path: work/crowther
+          key: crowther-wgs84-revision01-figshare-5332990-v1
+
+      - name: Download Crowther if needed
+        if: steps.existing.outcome == 'failure' && steps.retry-shard.outputs.count != '0' && steps.retry-crowther-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$CROWTHER_DIR"
+          curl -fL --retry 4 --retry-delay 3 \
+            https://ndownloader.figshare.com/files/5332990 \
+            -o /tmp/crowther.zip
+          unzip -j /tmp/crowther.zip \
+            '*Crowther_Nature_Biome_Revision_01_WGS84_GeoTiff.tif' \
+            -d "$CROWTHER_DIR"
+          rm -f /tmp/crowther.zip
+
+      - name: Prepare runtime on fresh runner
+        if: steps.existing.outcome == 'failure' && steps.retry-shard.outputs.count != '0'
+        env:
+          EARTHDATA_NETRC: ${{ secrets.EARTHDATA_NETRC }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OPERA_BASE/bin" "$OPERA_BASE/auth" \
+            "$OPERA_BASE/cache/worker" \
+            "$OPERA_BASE/cache/crowther_tiles" \
+            "$OPERA_BASE/events/tiles"
+          printf '%s' "$EARTHDATA_NETRC" > "$OPERA_BASE/auth/earthdata.netrc"
+          chmod 600 "$OPERA_BASE/auth/earthdata.netrc"
+          /usr/bin/python3 backend/scripts/prepare_earthdata_token.py
+          gcc -O3 -fPIC -shared \
+            backend/src/opera_cluster.c \
+            -o "$OPERA_BASE/bin/libopera_cluster.so"
+
+      - name: Process shard on fresh runner
+        if: steps.existing.outcome == 'failure' && steps.retry-shard.outputs.count != '0'
+        run: |
+          START=$(/usr/bin/python3 -c 'import json; print(json.load(open("work/opera/github_shards/metadata.json"))["window_start"])')
+          END=$(/usr/bin/python3 -c 'import json; print(json.load(open("work/opera/github_shards/metadata.json"))["window_end"])')
+          /usr/bin/python3 backend/scripts/run_batch.py \
+            --targets "work/opera/github_shards/shard_${{ matrix.shard }}.json" \
+            --window-start "$START" \
+            --window-end "$END" \
+            --workers 2
+
+      - name: Upload retried shard result
+        if: steps.existing.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: opera-shard-${{ matrix.shard }}-${{ github.run_id }}
@@ -153,8 +294,8 @@ jobs:
           retention-days: 2
 
   merge:
-    needs: [discover, process]
-    if: always() && needs.discover.result == 'success'
+    needs: [discover, process_retry]
+    if: always() && needs.discover.result == 'success' && needs.process_retry.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
