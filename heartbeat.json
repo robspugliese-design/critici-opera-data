@@ -1,9 +1,9 @@
 {
   "schema": "critici-opera-heartbeat-1",
-  "generated_at": "2026-09-25T11:13:08.649726+00:00",
-  "run_id": "36128056754",
-  "targets_selected": 32,
-  "tiles_successful": 32,
+  "generated_at": "2026-09-25T11:30:19.131397+00:00",
+  "run_id": "36129606704",
+  "targets_selected": 12,
+  "tiles_successful": 12,
   "tiles_failed": 0,
   "status": "ok"
 }
