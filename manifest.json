@@ -1,26 +1,26 @@
 {
   "schema": "critici-opera-github-update-v1",
   "scientific_schema_version": 2,
-  "generation_id": "36299892572",
-  "source_commit": "eab9dc3b957b29f5dd63c6e9ef375146e799ebca",
-  "generated_at": "2026-09-27T06:24:36.996051+00:00",
+  "generation_id": "36300720687",
+  "source_commit": "968f351534d0202ac62ff2f8196403140f2cf58f",
+  "generated_at": "2026-09-27T06:45:32.699353+00:00",
   "window_start": "2026-09-21",
   "window_end": "2026-09-27",
-  "discovery_generated_at": "2026-09-27T06:22:32.334264+00:00",
-  "pending_total_at_discovery": 474,
-  "targets_selected": 474,
-  "tiles_successful": 474,
+  "discovery_generated_at": "2026-09-27T06:39:16.058592+00:00",
+  "pending_total_at_discovery": 393,
+  "targets_selected": 393,
+  "tiles_successful": 393,
   "tiles_failed": 0,
   "failures": [],
   "catalog_delta": {
-    "rows": 5,
-    "sha256": "00a426af14c89744100dda08a0714a16217dfb494407e7d659fa1fec6dcf3887",
-    "bytes": 1791
+    "rows": 16,
+    "sha256": "d700a6e528040a389227aa55649a2d2a323b99444644d761bdba844f6d26caa9",
+    "bytes": 5504
   },
   "payload": {
     "name": "update.ndjson.gz",
-    "sha256": "d8389f38ecbf890fa4d466465724c8b990b2277c1d14107ef5cc964035efe8a9",
-    "bytes": 575147,
+    "sha256": "beefcf49c2cd2f8c5a44965ee2f219bd4f8114c7ee4cb3d7147aec29f44d5706",
+    "bytes": 880264,
     "encoding": "gzip+ndjson"
   }
 }
