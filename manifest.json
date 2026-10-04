@@ -1,12 +1,12 @@
 {
   "schema": "critici-opera-github-update-v1",
   "scientific_schema_version": 2,
-  "generation_id": "37222934512",
-  "source_commit": "c4e90e863948c333f3fcd9f80fcd62c14e9a4813",
-  "generated_at": "2026-10-04T18:04:47.808167+00:00",
+  "generation_id": "37223987234",
+  "source_commit": "f5ff39d70432d3f575a6448a400614c71f15f43c",
+  "generated_at": "2026-10-04T18:20:45.108013+00:00",
   "window_start": "2026-09-28",
   "window_end": "2026-10-04",
-  "discovery_generated_at": "2026-10-04T18:04:15.852745+00:00",
+  "discovery_generated_at": "2026-10-04T18:19:42.866184+00:00",
   "pending_total_at_discovery": 0,
   "targets_selected": 0,
   "tiles_successful": 0,
@@ -19,7 +19,7 @@
   },
   "payload": {
     "name": "update.ndjson.gz",
-    "sha256": "c22e4ea3157749fee3d81f03bf3e6b6078ed8e6e97c34eae02d53beca087540d",
+    "sha256": "3fd5021b464028408a773680294fcc630c2f6297a90393d4f1ff8e2374ac683e",
     "bytes": 39,
     "encoding": "gzip+ndjson"
   }
