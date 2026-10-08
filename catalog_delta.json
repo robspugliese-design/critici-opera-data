@@ -1,1 +1,1 @@
-{"schema":"critici-opera-catalog-delta-1","tiles":409,"events_seen":20121,"rows":[]}
+{"schema":"critici-opera-catalog-delta-1","tiles":367,"events_seen":3952,"rows":[{"event_key":"T47VLC:101:2026-10-03","source_tile":"T47VLC","rank":101,"confirmed_first_detection":"2026-10-03","confirmed_last_detection":"2026-10-03","confirmed_duration_days":1,"latitude":56.676359,"longitude":96.254491,"confirmed_trees_statistically_present_covered_area":10301,"strikes_per_second":0.119224537,"catalog_source":"github"}]}
