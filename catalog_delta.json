@@ -1,1 +1,1 @@
-{"schema":"critici-opera-catalog-delta-1","tiles":80,"events_seen":1306,"rows":[{"event_key":"T38VLK:8:2026-10-09","source_tile":"T38VLK","rank":8,"confirmed_first_detection":"2026-10-09","confirmed_last_detection":"2026-10-09","confirmed_duration_days":1,"latitude":57.921199,"longitude":42.321256,"confirmed_trees_statistically_present_covered_area":28400,"strikes_per_second":0.328703704,"catalog_source":"github"}]}
+{"schema":"critici-opera-catalog-delta-1","tiles":24,"events_seen":309,"rows":[]}
