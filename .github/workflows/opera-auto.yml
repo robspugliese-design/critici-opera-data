@@ -58,7 +58,7 @@ jobs:
           path: |
             work/opera/state
             work/opera/github_shards
-          retention-days: 2
+          retention-days: 1
 
   process:
     needs: discover
@@ -178,7 +178,7 @@ jobs:
             work/opera/manifest.json
             work/opera/events/tiles/*.json
           if-no-files-found: error
-          retention-days: 2
+          retention-days: 1
 
   process_retry:
     needs: [discover, process]
@@ -295,7 +295,7 @@ jobs:
             work/opera/manifest.json
             work/opera/events/tiles/*.json
           if-no-files-found: error
-          retention-days: 2
+          retention-days: 1
 
   merge:
     needs: [discover, process_retry]
