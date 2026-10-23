@@ -1,6 +1,9 @@
 name: OPERA safe artifact cleanup
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ['OPERA automatic public backend']
+    types: [completed]
   push:
     paths:
       - '.github/workflows/opera-artifact-cleanup.yml'
@@ -19,7 +22,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Delete only intermediate artifacts of completed successful OPERA runs
+      - name: Prune intermediate artifacts immediately after OPERA finishes
         run: |
           python3 - <<'PY'
           import collections, datetime, json, os, re, sys, time, urllib.error, urllib.request
@@ -48,31 +51,49 @@ jobs:
               run=a.get('workflow_run') or {}
               if not match or str(run.get('id'))!=match.group(1):continue
               grouped[int(run['id'])].append(a)
-          # Explicitly inspect the workflow run conclusion: only successful, fully
-          # published runs are eligible. Failed, cancelled and active runs are kept.
+          # Run completion is checked through GitHub, never merely inferred from age.
+          # Keep two latest successful bundles for comparison and two recent
+          # failed/cancelled bundles for diagnostics. Anything still running is safe.
           successful=[]
+          failed=[]
           for run_id in grouped:
               info=api(root+'/actions/runs/'+str(run_id))
-              if (info.get('status')=='completed'
-                  and info.get('conclusion')=='success'
-                  and info.get('name')=='OPERA automatic public backend'):
+              if (info.get('status')!='completed'
+                  or info.get('name')!='OPERA automatic public backend'):
+                  continue
+              if info.get('conclusion')=='success':
                   successful.append(run_id)
+              elif info.get('conclusion') in ('failure','cancelled','timed_out'):
+                  failed.append(run_id)
           successful.sort(reverse=True)
-          retained=set(successful[:3]) # three recent successful run bundles for diagnosis
+          failed.sort(reverse=True)
+          retained_success=set(successful[:2])
+          retained_failed=set(failed[:2])
           now=datetime.datetime.now(timezone.utc)
           def age_hours(a):
               created=datetime.datetime.fromisoformat(a['created_at'].replace('Z','+00:00'))
               return (now-created).total_seconds()/3600
-          candidates=[a for run_id in successful if run_id not in retained
-                      for a in grouped[run_id] if age_hours(a)>=1]
+          candidates=(
+              [a for run_id in successful if run_id not in retained_success
+               for a in grouped[run_id]]
+              +
+              # Do not accumulate diagnostic artifacts from persistent failures.
+              # Protect newest two failed runs and at least two hours of their data.
+              [a for run_id in failed if run_id not in retained_failed
+               for a in grouped[run_id] if age_hours(a)>=2]
+          )
           total=sum(a['size_in_bytes'] for a in candidates)
+          current_bytes=sum(a['size_in_bytes'] for a in artifacts if not a.get('expired'))
           print('AUDIT',repo,'active',sum(not x.get('expired') for x in artifacts),
+                'active_MiB',round(current_bytes/1048576,2),
                 'OPERA_RUNS',len(grouped),'successful',len(successful),
-                'protected_latest',sorted(retained,reverse=True),
+                'failed',len(failed),
+                'retain_success',sorted(retained_success,reverse=True),
+                'retain_failure',sorted(retained_failed,reverse=True),
                 'safe_candidates',len(candidates),
                 'potential_MiB',round(total/1048576,2))
-          # This automation deliberately never deletes repository files, caches,
-          # Goldoni assets, failed runs or intermediate artifacts still in use.
+          # Does not touch Git repository files, published feeds, scientific caches,
+          # Goose Bridge, or artifacts associated with an unfinished OPERA run.
           errors=[]
           deleted=0
           freed=0
