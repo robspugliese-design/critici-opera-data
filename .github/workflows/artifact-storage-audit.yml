@@ -50,3 +50,5 @@ jobs:
           for key,(n,size) in sorted(summaries.items(),key=lambda kv:kv[1][1],reverse=True)[:35]:
               print(key,n,mb(size))
           PY
+
+# Post-cleanup read-only verification
