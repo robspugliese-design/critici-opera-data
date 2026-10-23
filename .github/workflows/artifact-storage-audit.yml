@@ -1,6 +1,8 @@
 name: GitHub artifact storage audit
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '13 6 * * *'
   push:
     paths:
       - '.github/workflows/artifact-storage-audit.yml'
@@ -41,6 +43,9 @@ jobs:
           print('TOP_40_BY_SIZE (MiB, age_days, artifact_id, artifact_name)')
           for a in sorted(active,key=lambda x:x['size_in_bytes'],reverse=True)[:40]:
               print(mb(a['size_in_bytes']),round(day(a),1),a['id'],a['name'][:130])
+          if mb(total)>80:
+              print('::error::Actions artifact storage exceeds 80 MiB early-warning threshold')
+              raise SystemExit(1)
           print('NAME_PREFIXES')
           summaries=collections.defaultdict(lambda:[0,0])
           for a in active:
