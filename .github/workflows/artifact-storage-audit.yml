@@ -1,0 +1,52 @@
+name: GitHub artifact storage audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/artifact-storage-audit.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Inventory artifact storage without deleting anything
+        run: |
+          python3 - <<'PY'
+          import collections, datetime, json, os, urllib.request
+          from datetime import timezone
+          repo=os.environ['GITHUB_REPOSITORY']
+          api='https://api.github.com/repos/'+repo+'/actions/artifacts'
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'], 'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+          items=[]
+          for page in range(1,101):
+              req=urllib.request.Request(api+'?per_page=100&page='+str(page),headers=h)
+              with urllib.request.urlopen(req,timeout=40) as response: data=json.load(response)
+              batch=data.get('artifacts',[])
+              items.extend(batch)
+              if len(batch)<100:break
+          active=[a for a in items if not a.get('expired',False)]
+          now=datetime.datetime.now(timezone.utc)
+          day=lambda a: (now-datetime.datetime.fromisoformat(a['created_at'].replace('Z','+00:00'))).total_seconds()/86400
+          mb=lambda x:round(x/(1024*1024),2)
+          total=sum(a['size_in_bytes'] for a in active)
+          print('STORAGE_AUDIT',repo,'TOTAL_ARTIFACTS',len(items),'ACTIVE',len(active),'ACTIVE_MIB',mb(total))
+          for threshold in (1,2,3,7,14,30):
+              group=[a for a in active if day(a)>=threshold]
+              print('OLDER_THAN_DAYS',threshold,'COUNT',len(group),'MIB',mb(sum(a['size_in_bytes'] for a in group)))
+          print('TOP_40_BY_SIZE (MiB, age_days, artifact_id, artifact_name)')
+          for a in sorted(active,key=lambda x:x['size_in_bytes'],reverse=True)[:40]:
+              print(mb(a['size_in_bytes']),round(day(a),1),a['id'],a['name'][:130])
+          print('NAME_PREFIXES')
+          summaries=collections.defaultdict(lambda:[0,0])
+          for a in active:
+              key=a['name'].split('-')[0].split('_')[0]
+              summaries[key][0]+=1
+              summaries[key][1]+=a['size_in_bytes']
+          for key,(n,size) in sorted(summaries.items(),key=lambda kv:kv[1][1],reverse=True)[:35]:
+              print(key,n,mb(size))
+          PY
