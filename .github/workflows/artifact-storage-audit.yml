@@ -1,11 +1,8 @@
 name: GitHub artifact storage audit
+# Temporarily paused at owner's request on 2026-10-24.
+# Manual execution remains available; automatic triggers are suspended.
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '13 6 * * *'
-  push:
-    paths:
-      - '.github/workflows/artifact-storage-audit.yml'
 permissions:
   contents: read
   actions: read
