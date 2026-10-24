@@ -1,13 +1,9 @@
 name: OPERA automatic public backend
 
+# Temporarily paused at owner's request on 2026-10-24.
+# Manual execution remains available; automatic triggers are suspended.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "trigger.json"
-  schedule:
-    - cron: "17 * * * *"
-
 permissions:
   contents: write
   actions: write
