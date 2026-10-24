@@ -1,14 +1,8 @@
 name: OPERA safe artifact cleanup
+# Temporarily paused at owner's request on 2026-10-24.
+# Manual execution remains available; automatic triggers are suspended.
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ['OPERA automatic public backend']
-    types: [completed]
-  push:
-    paths:
-      - '.github/workflows/opera-artifact-cleanup.yml'
-  schedule:
-    - cron: '47 * * * *'
 permissions:
   contents: read
   actions: write
